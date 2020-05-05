@@ -49,7 +49,7 @@ def analogInput(channel=4):
 def x():
     volume = analogInput(4) # Reading from CH0
     volume = int(100 - interp(volume, [0, 1023], [0, 100]))
-    print(int(volume))
+    #print(int(volume))
     sleep(0.1)
     return volume
 
@@ -62,10 +62,17 @@ GPIO.setup(23, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup(14, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup(24, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
+#mic sensor stuff
+GPIO.setup(17, GPIO.IN)
 
+import time
+
+vol = x()
+startup = True
 while True: # Run forever
-    vol = None
-    setMessage("Ready for use!", vol)
+    if startup:
+        setMessage("Ready for use!", vol)
+        startup = False
     if GPIO.input(15) == GPIO.HIGH:
         print("Button  15 was pushed!")
         radioAan(17523)
@@ -116,4 +123,18 @@ while True: # Run forever
                 vol = x()
                 volume(vol)
         radioUit()
+    if GPIO.input(17) == GPIO.LOW:
+        print("Clap!")
+        radioAan(17523)
+        setMessage("Radio 1", vol)
+        timeout = time.time() + 60*30 
+        while True:
+            if x() != vol:
+                setMessage("Radio 1", x())
+                vol = x()
+                volume(vol)
+            if time.time() > timeout:
+                break
+        radioUit()
+
         
